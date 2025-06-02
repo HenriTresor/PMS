@@ -98,9 +98,11 @@ function App() {
             <table>
             <thead>
               <tr>
+                <th>Type</th>
                 <th>Plate Number</th>
                 <th>Time</th>
                 <th>Amount</th>
+                <th>Entry/Exit</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -110,14 +112,22 @@ function App() {
                   key={index}
                   className={log.type === "alert" ? "unauthorized" : ""}
                 >
+                  <td>{log.type === "alert" ? "Alert" : "Plate Log"}</td>
                   <td>{log.plate_number || "Unknown"}</td>
                   <td>{log.timestamp}</td>
                   <td>
-                    {log.type === "plate_log" ? `${log.amount} RWF` : "-"}
+                    {log.type === "plate_log" && log.entry_exit === "exit" || log.amount >0
+                      ? `${log.amount} RWF`
+                      : "-"}
+                  </td>
+                  <td>
+                    {log.entry_exit || log.message}
                   </td>
                   <td>
                     {log.type === "alert" ? (
-                      <span className="status-badge unauthorized">Unauthorized</span>
+                      <span className="status-badge unauthorized">
+                        {log.alert_type}
+                      </span>
                     ) : (
                       <span
                         className={`status-badge ${
@@ -132,6 +142,7 @@ function App() {
               ))}
             </tbody>
           </table>
+
 
           </div>
         )}

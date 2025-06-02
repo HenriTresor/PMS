@@ -46,7 +46,7 @@ def today_revenue():
         cur = conn.cursor()
         cur.execute("""
             SELECT SUM(amount) FROM plate_logs
-            WHERE entry_exit = 'exit' AND payment_status = 1 AND date(timestamp) = ?
+            WHERE payment_status = 1 AND date(timestamp) = ?
         """, (today_str,))
         result = cur.fetchone()[0]
     return {"revenue_today": result or 0}

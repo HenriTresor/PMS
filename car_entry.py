@@ -122,24 +122,49 @@ try:
                                     timestamp_db = time.strftime('%Y-%m-%d %H:%M:%S')
                                     try:
                                         with conn:
-                                            conn.execute('''INSERT INTO plate_logs (plate_number, payment_status, entry_exit, timestamp)
-                                                            VALUES (?, ?, ?, ?)''',
-                                                         (most_common, 0, 'entry', timestamp_db))
-                                        print(f"[LOGGED] Entry: {most_common} at {timestamp_db}")
+                                            cursor.execute('''
+                                                    SELECT * FROM plate_logs
+                                                    WHERE plate_number = ? AND payment_status = 0
+                                                    ORDER BY timestamp DESC
+                                                    LIMIT 1
+                                                    ''', (most_common,))
+                                            unpaid_record = cursor.fetchone()
 
-                                        if arduino:
-                                            arduino.write(b'1')  # Open gate
-                                            print("[GATE] Opening...")
-                                            time.sleep(15)
-                                            arduino.write(b'0')  # Close gate
-                                            print("[GATE] Closing...")
+                                            if unpaid_record:
+                                                    print(f"[BLOCKED] Vehicle {most_common} has unpaid entry. Entry denied.")
+                                                    timestamp_alert = time.strftime('%Y-%m-%d %H:%M:%S')
+                                                    with conn:
+                                                        conn.execute('''INSERT INTO alerts (plate_number, alert_type, message, timestamp)
+                                                                    VALUES (?, ?, ?, ?)''',
+                                                                (most_common, 'unpaid_entry_attempt',
+                                                                f'Blocked re-entry for unpaid vehicle {most_common}', timestamp_alert))
+                                                        if arduino:
+                                                            arduino.write(b'2')
+                                            else:
+                                                timestamp_db = time.strftime('%Y-%m-%d %H:%M:%S')
+                                                try:
+                                                    with conn:
+                                                        conn.execute('''INSERT INTO plate_logs (plate_number, payment_status, entry_exit, timestamp)
+                                                                        VALUES (?, ?, ?, ?)''',
+                                                                    (most_common, 0, 'entry', timestamp_db))
+                                                    print(f"[LOGGED] Entry: {most_common} at {timestamp_db}")
 
-                                        last_saved_plate = most_common
-                                        last_entry_time = now
-                                    except sqlite3.OperationalError as e:
-                                        print(f"[DB ERROR] Could not write to DB: {e}")
-                                        time.sleep(1)  # wait before retrying
+                                                    if arduino:
+                                                        arduino.write(b'1')  # Open gate
+                                                        print("[GATE] Opening...")
+                                                        time.sleep(15)
+                                                        arduino.write(b'0')  # Close gate
+                                                        print("[GATE] Closing...")
+
+                                                    last_saved_plate = most_common
+                                                    last_entry_time = now
+                                                except sqlite3.OperationalError as e:
+                                                    print(f"[DB ERROR] Could not write to DB: {e}")
+                                                    time.sleep(1)
+                                    except Exception as e:
+                                        print("Exception occurred:", e)
                                 else:
+                                    arduino.write(b'2')
                                     print("[SKIPPED] Duplicate entry within cooldown.")
 
                     cv2.imshow("Plate", plate_img)

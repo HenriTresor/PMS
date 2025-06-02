@@ -94,10 +94,11 @@ def process_payment(plate, balance, ser):
                 if "DONE" in confirm:
                     print("[ARDUINO] Write confirmed")
                     cursor.execute('''
-                        UPDATE plate_logs
-                        SET payment_status = 1
-                        WHERE id = ?
-                    ''', (log_id,))
+                            UPDATE plate_logs
+                            SET payment_status = 1, amount = ?
+                            WHERE id = ?
+                        ''', (amount_due, log_id))
+
                     conn.commit()
                     break
             if time.time() - start_time > 10:

@@ -55,6 +55,13 @@ def is_payment_complete(plate_number):
     row = cursor.fetchone()
     return row and row[0] == 1 and row[1] == 'entry'
 
+def get_amount(plate_number):
+    cursor.execute('''
+    SELECT amount from plate_logs WHERE plate_number = ? ORDER BY timestamp DESC LIMIT 1
+''', (plate_number,))
+    row = cursor.fetchone()
+    return row[0] if row else 0
+
 # log alert
 def log_alert(plate_number, alert_type, message):
     timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
@@ -122,10 +129,11 @@ try:
                                 if is_payment_complete(most_common):    
                                     try:
                                         with conn:
+                                            amount =  get_amount(most_common)
                                             conn.execute('''
-                                                INSERT INTO plate_logs (plate_number, payment_status, entry_exit, timestamp)
-                                                VALUES (?, ?, ?, ?)
-                                            ''', (most_common, 1, 'exit', timestamp_db))
+                                                INSERT INTO plate_logs (plate_number, payment_status, amount, entry_exit, timestamp)
+                                                VALUES (?, ?, ?, ?, ?)
+                                            ''', (most_common, 1, amount, 'exit', timestamp_db))
                                         print(f"[GRANTED] Exit allowed: {most_common} at {timestamp_db}")
 
                                         if arduino:
