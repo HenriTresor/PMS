@@ -40,6 +40,7 @@ cursor.execute('''
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         plate_number TEXT NOT NULL,
         payment_status INTEGER DEFAULT 0,
+        amount INTEGER DEFAULT 0,
         entry_exit TEXT NOT NULL,
         timestamp TEXT NOT NULL
     )
