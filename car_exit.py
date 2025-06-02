@@ -10,7 +10,7 @@ import pytesseract
 
 # === Configuration ===
 pytesseract.pytesseract.tesseract_cmd = r'Tesseract-OCR\tesseract.exe'
-model = YOLO('best.pt')
+model = YOLO('model.pt')
 db_file = 'parking_system-1.db'
 
 # === Arduino Setup ===
