@@ -9,7 +9,7 @@ from collections import Counter
 import pytesseract
 
 # === Configuration ===
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+pytesseract.pytesseract.tesseract_cmd = r'Tesseract-OCR\tesseract.exe'
 model = YOLO('best.pt')
 db_file = 'parking_system-1.db'
 
